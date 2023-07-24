@@ -1,56 +1,45 @@
 import HttpError from "../helpers/HttpError.js";
-import { addContact, getContactById, listContacts, removeContact, updateContact } from "../models/contacts.js";
+import { Contact } from "../models/contacts.js";
+import { ctrlWrapper } from '../decorators/index.js'
 
-export const listContactsController = async (req, res, next) => {
-	try {
-		const list = await listContacts()
-		res.json(list)
-	} catch (error) {
-		next(error)
-	}
-}
+export const listContactsController = ctrlWrapper(async (req, res) => {
+	const list = await Contact.find();
+	res.json(list)
+})
 
-export const getContactByIdController = async (req, res, next) => {
-	try {
-		const contact = await getContactById(req.params.contactId)
-		if (!contact) {
-			throw HttpError(404, "Not found")
-		}
-		res.json(contact)
-	} catch (error) {
-		next(error);
+export const getContactByIdController = ctrlWrapper(async (req, res) => {
+	const contact = await Contact.findById(req.params.contactId)
+	if (!contact) {
+		throw HttpError(404, "Not found")
 	}
-}
+	res.json(contact)
+})
 
-export const addContactController = async (req, res, next) => {
-	try {
-		const contact = await addContact(req.body);
-		res.status(201).json(contact)
-	} catch (error) {
-		next(error)
-	}
-}
+export const addContactController = ctrlWrapper(async (req, res) => {
+	const contact = await Contact.create(req.body);
+	res.status(201).json(contact)
+})
 
-export const removeContactController = async (req, res, next) => {
-	try {
-		const contact = await removeContact(req.params.contactId);
-		if (!contact) {
-			throw HttpError(404, "Not found")
-		}
-		res.json({ "message": "contact deleted" })
-	} catch (error) {
-		next(error)
+export const removeContactController = ctrlWrapper(async (req, res) => {
+	const contact = await Contact.findByIdAndRemove(req.params.contactId);
+	if (!contact) {
+		throw HttpError(404, "Not found")
 	}
-}
+	res.json({ "message": "contact deleted" })
+})
 
-export const updateContactController = async (req, res, next) => {
-	try {
-		const contact = await updateContact(req.params.contactId, req.body);
-		if (!contact) {
-			throw HttpError(404, "Not found")
-		}
-		res.json(contact)
-	} catch (error) {
-		next(error)
+export const updateContactController = ctrlWrapper(async (req, res) => {
+	const contact = await Contact.findByIdAndUpdate(req.params.contactId, req.body, { new: true });
+	if (!contact) {
+		throw HttpError(404, "Not found")
 	}
-}
+	res.json(contact)
+})
+
+export const updateContactFavoriteController = ctrlWrapper(async (req, res) => {
+	const contact = await Contact.findByIdAndUpdate(req.params.contactId, req.body, { new: true });
+	if (!contact) {
+		throw HttpError(404, "Not found")
+	}
+	res.json(contact)
+})
