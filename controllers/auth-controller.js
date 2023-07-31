@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs"
 import "dotenv/config"
-
 import HttpError from "../helpers/HttpError.js";
 import User from "../models/user.js";
 import { ctrlWrapper } from '../decorators/index.js'

@@ -2,9 +2,11 @@ import express from "express"
 import { listContactsController, getContactByIdController, addContactController, removeContactController, updateContactController, updateContactFavoriteController } from "../../controllers/contacts.js";
 import schemas from "../../schemas/contacts-schemas.js";
 import { validateBody } from "../../decorators/index.js";
-import { isEmptyBody, isEmptyFavoriteBody, isValidId } from "../../middlewares/index.js";
+import { authenticate, isEmptyBody, isEmptyFavoriteBody, isValidId } from "../../middlewares/index.js";
 
 const router = express.Router();
+
+router.use(authenticate)
 
 router.get('/', listContactsController)
 

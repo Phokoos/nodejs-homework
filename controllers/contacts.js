@@ -3,7 +3,8 @@ import { Contact } from "../models/contacts.js";
 import { ctrlWrapper } from '../decorators/index.js'
 
 export const listContactsController = ctrlWrapper(async (req, res) => {
-	const list = await Contact.find();
+	const { _id: owner } = req.user;
+	const list = await Contact.find({ owner });
 	res.json(list)
 })
 
@@ -16,7 +17,8 @@ export const getContactByIdController = ctrlWrapper(async (req, res) => {
 })
 
 export const addContactController = ctrlWrapper(async (req, res) => {
-	const contact = await Contact.create(req.body);
+	const { _id: owner } = req.user;
+	const contact = await Contact.create({ ...req.body, owner });
 	res.status(201).json(contact)
 })
 
