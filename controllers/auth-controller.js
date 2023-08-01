@@ -4,6 +4,7 @@ import HttpError from "../helpers/HttpError.js";
 import User from "../models/user.js";
 import { ctrlWrapper } from '../decorators/index.js'
 import jwt from "jsonwebtoken";
+import usersSchemas from "../schemas/users-schemas.js";
 
 
 const JWT_SECRET = process.env.JWT_SECRET
@@ -28,6 +29,7 @@ const signIn = async (req, res, next) => {
 	const { email, password } = req.body;
 
 	const user = await User.findOne({ email })
+
 	if (!user) {
 		throw HttpError(401, "Email or password is wrong")
 	}
@@ -43,6 +45,12 @@ const signIn = async (req, res, next) => {
 	}
 
 	const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" })
+	// user[token] = token
+	// console.log(newUser);
+	const userWithToken = Object.assign(user, { token: token })
+	// console.log(userWithToken);
+	const updatedUser = await User.findByIdAndUpdate(user._id, userWithToken, { new: true })
+	// console.log(updatedUser);
 
 	res.json({
 		token,
