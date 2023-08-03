@@ -15,4 +15,8 @@ const userSighInSchema = Joi.object({
 	email: Joi.string().email().required()
 })
 
-export default { userSighUpSchema, userSighInSchema }
+const userSetSubscriptionSchema = Joi.object({
+	subscription: Joi.string().valid('starter', 'pro', 'business'),
+})
+
+export default { userSighUpSchema, userSighInSchema, userSetSubscriptionSchema }
