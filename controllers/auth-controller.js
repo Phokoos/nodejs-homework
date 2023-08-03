@@ -6,7 +6,6 @@ import { ctrlWrapper } from '../decorators/index.js'
 import jwt from "jsonwebtoken";
 import usersSchemas from "../schemas/users-schemas.js";
 
-
 const JWT_SECRET = process.env.JWT_SECRET
 
 const signUp = async (req, res) => {
@@ -20,8 +19,10 @@ const signUp = async (req, res) => {
 
 	const newUser = await User.create({ ...req.body, password: hashPassword });
 	res.status(201).json({
-		email: newUser.email,
-		subscription: newUser.subscription,
+		user: {
+			email: newUser.email,
+			subscription: newUser.subscription,
+		}
 	});
 }
 
@@ -44,20 +45,32 @@ const signIn = async (req, res, next) => {
 		id: user._id
 	}
 
-	const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" })
-	// user[token] = token
-	// console.log(newUser);
+	const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "23h" })
 	const userWithToken = Object.assign(user, { token: token })
-	// console.log(userWithToken);
+
 	const updatedUser = await User.findByIdAndUpdate(user._id, userWithToken, { new: true })
-	// console.log(updatedUser);
 
 	res.json({
-		token,
+		token: updatedUser.token,
+		user: {
+			email: updatedUser.email,
+			subscription: updatedUser.subscription
+		}
 	})
+}
+
+const getCurrent = (req, res) => {
+	const { subscription, email } = req.user
+
+	res.json({
+		email,
+		subscription
+	}
+	)
 }
 
 export default {
 	signUp: ctrlWrapper(signUp),
 	signIn: ctrlWrapper(signIn),
+	getCurrent: ctrlWrapper(getCurrent)
 }
