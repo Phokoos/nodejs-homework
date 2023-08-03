@@ -4,13 +4,13 @@ import HttpError from "../helpers/HttpError.js";
 import User from "../models/user.js";
 import { ctrlWrapper } from '../decorators/index.js'
 import jwt from "jsonwebtoken";
-import usersSchemas from "../schemas/users-schemas.js";
-
 const JWT_SECRET = process.env.JWT_SECRET
 
 const signUp = async (req, res) => {
 	const { email, password } = req.body;
+
 	const user = await User.findOne({ email })
+
 	if (user) {
 		throw HttpError(409, "Email in use")
 	}
@@ -18,6 +18,7 @@ const signUp = async (req, res) => {
 	const hashPassword = await bcrypt.hash(password, 10)
 
 	const newUser = await User.create({ ...req.body, password: hashPassword });
+
 	res.status(201).json({
 		user: {
 			email: newUser.email,
@@ -26,7 +27,7 @@ const signUp = async (req, res) => {
 	});
 }
 
-const signIn = async (req, res, next) => {
+const signIn = async (req, res) => {
 	const { email, password } = req.body;
 
 	const user = await User.findOne({ email })
@@ -46,9 +47,8 @@ const signIn = async (req, res, next) => {
 	}
 
 	const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "23h" })
-	const userWithToken = Object.assign(user, { token: token })
 
-	const updatedUser = await User.findByIdAndUpdate(user._id, userWithToken, { new: true })
+	const updatedUser = await User.findByIdAndUpdate(user._id, { token }, { new: true })
 
 	res.json({
 		token: updatedUser.token,
@@ -69,8 +69,27 @@ const getCurrent = (req, res) => {
 	)
 }
 
+const logout = async (req, res) => {
+	const { _id } = req.user;
+	await User.findByIdAndUpdate(_id, { token: "" }),
+
+		res.status(204).send()
+}
+
+const updateSubscriptionController = async (req, res) => {
+	const { _id } = req.user;
+	const { subscription } = req.body
+	const updatedUser = await User.findByIdAndUpdate(_id, { subscription }, { new: true })
+
+	res.json({
+		email: updatedUser.email,
+		subscription: updatedUser.subscription
+	})
+}
 export default {
 	signUp: ctrlWrapper(signUp),
 	signIn: ctrlWrapper(signIn),
-	getCurrent: ctrlWrapper(getCurrent)
+	getCurrent: ctrlWrapper(getCurrent),
+	logout: ctrlWrapper(logout),
+	updateSubscriptionController: ctrlWrapper(updateSubscriptionController)
 }
