@@ -3,7 +3,11 @@ import { Contact } from "../models/contacts.js";
 import { ctrlWrapper } from '../decorators/index.js'
 
 export const listContactsController = ctrlWrapper(async (req, res) => {
-	const list = await Contact.find();
+	const { page = 1, limit = 5, ...query } = req.query
+	const skip = (page - 1) * limit
+	const { _id: owner } = req.user;
+
+	const list = await Contact.find({ owner, ...query }, null, { skip, limit });
 	res.json(list)
 })
 
@@ -12,11 +16,13 @@ export const getContactByIdController = ctrlWrapper(async (req, res) => {
 	if (!contact) {
 		throw HttpError(404, "Not found")
 	}
+	console.log(contact);
 	res.json(contact)
 })
 
 export const addContactController = ctrlWrapper(async (req, res) => {
-	const contact = await Contact.create(req.body);
+	const { _id: owner } = req.user;
+	const contact = await Contact.create({ ...req.body, owner });
 	res.status(201).json(contact)
 })
 
