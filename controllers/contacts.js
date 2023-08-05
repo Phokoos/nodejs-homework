@@ -52,3 +52,9 @@ export const updateContactFavoriteController = ctrlWrapper(async (req, res) => {
 	}
 	res.json(contact)
 })
+
+// Test
+
+export const sum = (a, b) => {
+	return a + b;
+}
