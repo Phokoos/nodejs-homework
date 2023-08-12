@@ -10,6 +10,10 @@ const userSighUpSchema = Joi.object({
 	token: Joi.string(),
 })
 
+const userEmailVerify = Joi.object({
+	email: Joi.string().email().required(),
+})
+
 const userSighInSchema = Joi.object({
 	password: Joi.string().regex(passwordPattern).required().error(joiCheckPasswordError),
 	email: Joi.string().email().required()
@@ -19,4 +23,4 @@ const userSetSubscriptionSchema = Joi.object({
 	subscription: Joi.string().valid('starter', 'pro', 'business'),
 })
 
-export default { userSighUpSchema, userSighInSchema, userSetSubscriptionSchema }
+export default { userSighUpSchema, userSighInSchema, userSetSubscriptionSchema, userEmailVerify }

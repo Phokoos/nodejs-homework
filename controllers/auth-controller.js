@@ -8,7 +8,10 @@ import gravatar from "gravatar"
 import fs from 'fs/promises'
 import Jimp from "jimp";
 import path from "path";
-const JWT_SECRET = process.env.JWT_SECRET
+import { nanoid } from "nanoid";
+import sendEmail from "../helpers/sendEmail.js";
+import usersSchemas from "../schemas/users-schemas.js";
+const { JWT_SECRET, BASE_URL } = process.env
 
 const signUp = async (req, res) => {
 	const { email, password } = req.body;
@@ -21,9 +24,18 @@ const signUp = async (req, res) => {
 	}
 
 	const hashPassword = await bcrypt.hash(password, 10)
+	const verificationToken = nanoid()
 	const avatarURL = gravatar.url(email, { s: '250' })
 
-	const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL });
+	const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL, verificationToken });
+
+	const verifyEmail = {
+		to: email,
+		subject: "Verify email",
+		html: `<a href="${BASE_URL}/users/verify/${verificationToken}" target="_black" >Click verify</a>`
+	}
+
+	await sendEmail(verifyEmail);
 
 	res.status(201).json({
 		user: {
@@ -31,6 +43,45 @@ const signUp = async (req, res) => {
 			subscription: newUser.subscription,
 		}
 	});
+}
+
+const verify = async (req, res) => {
+	const { verificationToken } = req.params;
+	const user = await User.findOne({ verificationToken })
+	if (!user) {
+		throw HttpError(404, "User not found")
+	}
+
+	console.log(user);
+
+	await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: "verify" })
+
+	res.json({
+		message: "Verify success"
+	})
+}
+
+const resendVerifyEmail = async (req, res) => {
+	const { email } = req.body;
+	const user = await User.findOne({ email })
+	if (!user) {
+		throw HttpError(404, "User not found")
+	}
+	if (user.verify) {
+		throw HttpError(400, "Verification has already been passed")
+	}
+
+	const verifyEmail = {
+		to: email,
+		subject: "Verify email",
+		html: `<a href="${BASE_URL}/users/verify/${user.verificationToken}" target="_black" >Click verify</a>`
+	}
+
+	await sendEmail(verifyEmail);
+
+	res.json({
+		message: "Verification email sent"
+	})
 }
 
 const uploadNewAvatar = async (req, res) => {
@@ -60,9 +111,12 @@ const signIn = async (req, res) => {
 	const { email, password } = req.body;
 
 	const user = await User.findOne({ email })
-
 	if (!user) {
 		throw HttpError(401, "Email or password is wrong")
+	}
+
+	if (!user.verify) {
+		throw HttpError(401, "User`s email not verified")
 	}
 
 	const passwordCompare = await bcrypt.compare(password, user.password)
@@ -117,6 +171,8 @@ const updateSubscriptionController = async (req, res) => {
 }
 export default {
 	signUp: ctrlWrapper(signUp),
+	verify: ctrlWrapper(verify),
+	resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
 	signIn: ctrlWrapper(signIn),
 	getCurrent: ctrlWrapper(getCurrent),
 	logout: ctrlWrapper(logout),
