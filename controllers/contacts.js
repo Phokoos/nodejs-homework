@@ -1,6 +1,7 @@
 import HttpError from "../helpers/HttpError.js";
 import { Contact } from "../models/contacts.js";
 import { ctrlWrapper } from '../decorators/index.js'
+import path from "path";
 
 export const listContactsController = ctrlWrapper(async (req, res) => {
 	const { page = 1, limit = 5, ...query } = req.query
@@ -19,6 +20,8 @@ export const getContactByIdController = ctrlWrapper(async (req, res) => {
 	console.log(contact);
 	res.json(contact)
 })
+
+const avatarPath = path.resolve("public", "avatars")
 
 export const addContactController = ctrlWrapper(async (req, res) => {
 	const { _id: owner } = req.user;
@@ -49,3 +52,9 @@ export const updateContactFavoriteController = ctrlWrapper(async (req, res) => {
 	}
 	res.json(contact)
 })
+
+// Test
+
+export const sum = (a, b) => {
+	return a + b;
+}
