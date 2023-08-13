@@ -5,7 +5,7 @@ const { UKT_NET_EMAIL, UKR_NET_PASSWORD } = process.env;
 
 const nodemailerConfig = {
 	host: "smtp.ukr.net",
-	port: 465, // 25, 2525
+	port: 465,
 	secure: true,
 	auth: {
 		user: UKT_NET_EMAIL,
@@ -14,14 +14,6 @@ const nodemailerConfig = {
 }
 
 const transport = nodemailer.createTransport(nodemailerConfig);
-
-
-// const data = {
-// 		to: "lafic23473@viperace.com",
-// 		subject: "Test email",
-// 		html: "<strong>Test email</strong>",
-// };
-
 
 const sendEmail = async (data) => {
 	const email = { ...data, from: UKT_NET_EMAIL };

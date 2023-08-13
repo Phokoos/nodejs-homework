@@ -10,7 +10,6 @@ import Jimp from "jimp";
 import path from "path";
 import { nanoid } from "nanoid";
 import sendEmail from "../helpers/sendEmail.js";
-import usersSchemas from "../schemas/users-schemas.js";
 const { JWT_SECRET, BASE_URL } = process.env
 
 const signUp = async (req, res) => {
